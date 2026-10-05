@@ -1,0 +1,20 @@
+{
+  "name": "miva-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Miva: costeo de productos para Android",
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "android:sync": "npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.0.0",
+    "@capacitor/android": "8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Miva · Tu precio justo</title>
+<style>
+:root{--navy:#0b2447;--green:#16a34a;--bg:#f3f6fa;--line:#d6dfeb;--mut:#5b6b80;--ink:#10243f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--navy);padding:18px 16px 14px;text-align:center;color:#fff}
+.logo{display:inline-flex;align-items:flex-end;font:800 38px/1 system-ui,sans-serif;letter-spacing:-1px}
+.logo svg{width:30px;height:30px;margin:0 1px 3px}
+header p{margin:4px 0 0;font-size:14px;opacity:.85}
+main{max-width:520px;margin:0 auto;padding:16px}
+h2{font-size:22px;margin:4px 0 6px}
+.sub{color:var(--mut);margin:0 0 14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+label{display:block;font-weight:600;margin:12px 0 5px}
+input,select{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+input:focus,select:focus,button:focus-visible{outline:3px solid #86efac;border-color:var(--green)}
+.row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 14px;border:1.5px solid var(--line);background:#fff;border-radius:999px;font:inherit;cursor:pointer}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn{width:100%;padding:14px;border:0;border-radius:12px;background:var(--green);color:#fff;font:inherit;font-weight:700;font-size:17px;cursor:pointer;margin-top:8px}
+.btn.alt{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+.btn.big{background:var(--navy);padding:18px;text-align:left}
+.btn.big small{display:block;font-weight:400;opacity:.8;font-size:14px}
+.nav{display:flex;gap:10px}.nav .btn{margin-top:14px}
+.bar{height:6px;background:var(--line);border-radius:9px;margin-bottom:14px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green)}
+.tip{background:#ecfdf3;border-radius:10px;padding:10px 12px;color:#14532d;font-size:14px;margin-top:12px}
+.price{font-size:44px;font-weight:800;color:var(--navy);margin:4px 0}
+.line{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
+.frase{font-size:20px;font-weight:700;text-align:center;color:var(--green);margin:14px 0}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.x{border:0;background:none;font-size:20px;color:var(--mut);cursor:pointer}
+.link{background:none;border:0;color:var(--mut);text-decoration:underline;cursor:pointer;margin-top:14px;font:inherit}
+small.f{display:block;text-align:center;color:var(--mut);margin-top:16px}
+</style></head><body>
+<header>
+<div class="logo">mi<svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11l7 9L22 3"/></svg>a</div>
+<p>Tu precio justo</p></header>
+<main id="app"></main>
+<script>
+const $=s=>document.querySelector(s);
+const num=v=>{let s=String(v||'').trim().replace(/[$\s]/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,'');return parseFloat(s)||0};
+const $$=n=>'$'+Math.round(n).toLocaleString('es-AR');
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let db={list:[],n:0};
+try{const d=JSON.parse(localStorage.getItem('miva')||'{}');db.list=d.list||[];db.n=d.n||0}catch(e){}
+const save=()=>{try{localStorage.setItem('miva',JSON.stringify(db))}catch(e){}};
+const FREE=3, GAS={red:300,garrafa:900,no:0}, AMORT=400; // estimaciones por hora
+let S={},step=0,mode='',view='home';
+
+function fresh(m){mode=m;step=0;view='flow';S={ing:[{n:'',q:'',u:'g',p:''}],g:50,gc:'',gas:'red',ins:'local',loc:'no',caja:'caja',rotos:'no'}}
+function start(m){if(db.n>=FREE)return go('pro');fresh(m);go('flow')}
+function go(v){view=v;draw();window.scrollTo(0,0)}
+function set(k,v){S[k]=v;if(k=='g')S.gc='';draw()}
+function chips(k,opts){return '<div class="chips">'+opts.map(o=>`<button type="button" class="chip${S[k]==o[0]?' on':''}" onclick="set('${k}','${o[0]}')">${o[1]}</button>`).join('')+'</div>'}
+function f(k,label,ph,type){return `<label>${label}</label><input data-k="${k}" ${type=='t'?'':'inputmode="decimal"'} placeholder="${ph||''}" value="${esc(S[k])}">`}
+document.addEventListener('input',e=>{const d=e.target.dataset;if(d.i!==undefined)S.ing[d.i][d.f]=e.target.value;else if(d.k)S[d.k]=e.target.value});
+function addIng(){S.ing.push({n:'',q:'',u:'g',p:''});draw()}
+function delIng(i){if(S.ing.length>1){S.ing.splice(i,1);draw()}}
+
+// ---- pasos de producción
+const unitTxt={g:'el kilo',ml:'el litro',u:'cada unidad'};
+const P=[
+['¿Qué producís?',()=>f('nombre','¿Qué producto es?','Ej: pizza','t')+f('rinde','¿Cuántas unidades te salen?','Ej: 8')+'<label>Ingredientes y cuánto usaste</label>'+S.ing.map((x,i)=>`<div class="row"><input data-i="${i}" data-f="n" placeholder="Ingrediente" value="${esc(x.n)}"><input data-i="${i}" data-f="q" inputmode="decimal" placeholder="Cantidad" value="${esc(x.q)}"><select data-i="${i}" data-f="u"><option value="g"${x.u=='g'?' selected':''}>gramos</option><option value="ml"${x.u=='ml'?' selected':''}>ml</option><option value="u"${x.u=='u'?' selected':''}>unidades</option></select></div>`).join('')+'<button type="button" class="btn alt" onclick="addIng()">+ Agregar otro ingrediente</button>'],
+['¿Cuánto pagaste?',()=>S.ing.filter(x=>x.n.trim()).map(x=>{const i=S.ing.indexOf(x);return `<label>¿Cuánto pagaste ${unitTxt[x.u]} de ${esc(x.n)}?</label><input data-i="${i}" data-f="p" inputmode="decimal" placeholder="$" value="${esc(x.p)}">`}).join('')||'<p class="sub">Volvé al paso anterior y cargá tus ingredientes.</p>'],
+['Gas y tiempo',()=>'<label>¿Qué gas usás?</label>'+chips('gas',[['red','Gas de red'],['garrafa','Garrafa'],['no','No uso gas']])+f('min','¿Cuántos minutos tardaste en hacerlo?','Ej: 90')+'<div class="tip">Sumamos un montito por el gas y por el desgaste de tus equipos (horno, batidora, etc.). Así tu trabajo no te deja pérdida con el tiempo.</div>'],
+['Tus insumos',()=>'<label>¿Cómo conseguís los insumos?</label>'+chips('ins',[['local','Los compro en mi localidad'],['envio','Me los envían a mi domicilio']])+(S.ins=='envio'?f('envio','¿Cuánto pagás de envío por compra?','$'):'')],
+['Extras',()=>f('pack','Packaging por unidad (caja, envoltorio)','$ · si no tenés, dejalo vacío')+f('ent','Entrega a domicilio por unidad','$ · si no tenés, dejalo vacío')+localQ()],
+['Tu ganancia',()=>ganQ()]
+];
+// ---- pasos de reventa
+const R=[
+['¿Qué revendés?',()=>f('nombre','¿Qué producto es?','Ej: gaseosa','t')+'<label>¿Lo comprás por caja o por unidad?</label>'+chips('caja',[['caja','Una caja o pack'],['unidad','Una sola unidad']])],
+['¿Cuánto pagaste?',()=>S.caja=='caja'?f('pc','¿Cuánto pagaste la caja?','$')+f('uc','¿Cuántas unidades trae?','Ej: 12'):f('pc','¿Cuánto pagaste por unidad?','$')],
+['Extras',()=>f('pack','Packaging por unidad','$ · si no tenés, dejalo vacío')+f('ent','Entrega a domicilio por unidad','$ · si no tenés, dejalo vacío')+(S.caja=='caja'?'<label>¿Algún producto vino fallado, roto o vencido?</label>'+chips('rotos',[['no','No'],['si','Sí']])+(S.rotos=='si'?f('nr','¿Cuántos productos vinieron así?','Ej: 1'):''):'')+localQ()],
+['Tu ganancia',()=>ganQ()]
+];
+function localQ(){return '<label>¿Tenés local?</label>'+chips('loc',[['no','No tengo'],['propio','Propio'],['alq','Alquilado']])+(S.loc!='no'?f('lg','¿Cuánto gastás por mes en el local?','$')+f('lv','¿Cuántos de estos productos vendés por mes?','Ej: 100'):'')}
+function ganQ(){return '<label>¿Qué porcentaje de ganancia querés sacar?</label>'+chips('g',[20,30,40,50,60,70,80,90,100].map(n=>[n,n+'%']))+f('gc','O poné el tuyo (hasta 200%)','Ej: 120')}
+const gan=()=>{const c=num(S.gc);return c>0?Math.min(c,200):num(S.g)};
+
+// ---- cálculo
+function calc(){
+ const loc=S.loc!='no'?num(S.lg)/Math.max(1,num(S.lv)):0, pack=num(S.pack), ent=num(S.ent);
+ let parts=[];
+ if(mode=='prod'){
+  const rinde=Math.max(1,num(S.rinde));
+  const ing=S.ing.reduce((t,x)=>t+(x.u=='u'?num(x.q)*num(x.p):num(x.q)/1000*num(x.p)),0);
+  const fijo=num(S.min)/60*(GAS[S.gas]+AMORT);
+  const env=S.ins=='envio'?num(S.envio):0;
+  parts=[['Ingredientes',ing/rinde],['Gas y desgaste de equipos',fijo/rinde],['Envío de insumos',env/rinde]];
+ }else{
+  const n=S.caja=='caja'?Math.max(1,num(S.uc)):1, malos=S.rotos=='si'?num(S.nr):0;
+  parts=[['Producto',num(S.pc)/Math.max(1,n-malos)]];
+ }
+ parts.push(['Packaging',pack],['Entrega',ent],['Local',loc]);
+ parts=parts.filter(p=>p[1]>0);
+ const costo=parts.reduce((t,p)=>t+p[1],0);
+ return {parts,costo,precio:costo*(1+gan()/100),nombre:S.nombre||'Mi producto'};
+}
+function finish(){S.res=calc();S.saved=false;db.n++;save();go('res')}
+function keep(){if(S.saved)return;db.list.unshift({n:S.res.nombre,p:S.res.precio});save();S.saved=true;draw()}
+function del(i){db.list.splice(i,1);save();draw()}
+
+// ---- pantallas
+function draw(){
+ const a=$('#app');
+ if(view=='home'){const q=Math.max(0,FREE-db.n);
+  a.innerHTML=`<h2>¿Qué querés costear?</h2><p class="sub">Te hacemos unas preguntas simples y te decimos a qué precio vender.</p>
+  <button class="btn big" onclick="start('prod')">Algo que yo hago<small>Cocino, fabrico o preparo mi producto</small></button>
+  <button class="btn big" onclick="start('rev')">Algo que revendo<small>Lo compro hecho y lo vendo</small></button>
+  <button class="btn alt" onclick="go('list')">Mi emprendimiento (${db.list.length})</button>
+  <small class="f">${q} costeos gratis · Tus costeos se guardan en este dispositivo</small>`;return}
+ if(view=='flow'){const st=mode=='prod'?P:R,t=st[step],last=step==st.length-1;
+  a.innerHTML=`<div class="bar"><i style="width:${(step+1)/st.length*100}%"></i></div><h2>${t[0]}</h2><p class="sub">Paso ${step+1} de ${st.length}</p><div class="card">${t[1]()}</div>
+  <div class="nav"><button class="btn alt" onclick="${step?'step--;draw()':"go('home')"}">Atrás</button><button class="btn" onclick="${last?'finish()':'step++;draw();window.scrollTo(0,0)'}">${last?'Ver mi precio':'Siguiente'}</button></div>`;return}
+ if(view=='res'){const r=S.res;
+  a.innerHTML=`<div class="card"><p class="sub" style="margin:0">Precio sugerido para vender ${esc(r.nombre)}</p><div class="price">${$$(r.precio)}</div><p class="sub">Por unidad, con ${gan()}% de ganancia</p>
+  ${r.parts.map(p=>`<div class="line"><span>${p[0]}</span><b>${$$(p[1])}</b></div>`).join('')}<div class="line"><span>Costo total por unidad</span><b>${$$(r.costo)}</b></div><div class="line"><span>Tu ganancia por unidad</span><b>${$$(r.precio-r.costo)}</b></div></div>
+  <div class="frase">Tu trabajo vale. No lo regales.</div>
+  <button class="btn" onclick="keep()">${S.saved?'Guardado en mi emprendimiento ✓':'Guardar en mi emprendimiento'}</button>
+  <button class="btn alt" onclick="go('home')">Costear otro producto</button>`;return}
+ if(view=='list'){
+  a.innerHTML=`<h2>Mi emprendimiento</h2><p class="sub">Tus productos ya costeados y su precio final.</p>`+(db.list.length?db.list.map((x,i)=>`<div class="card item"><div><b>${esc(x.n)}</b><br><span class="sub">${$$(x.p)} por unidad</span></div><button class="x" aria-label="Borrar" onclick="del(${i})">✕</button></div>`).join(''):'<div class="card">Todavía no guardaste ningún producto. Hacé tu primer costeo y guardalo acá.</div>')+`<button class="btn" onclick="go('home')">Volver al inicio</button>`;return}
+ if(view=='pro'){
+  a.innerHTML=`<h2>Ya usaste tus 3 costeos gratis</h2><div class="card"><b>Plan Pro</b><p>Está en camino. Muy pronto vas a poder seguir costeando todo lo que quieras.</p></div><button class="btn" onclick="go('home')">Volver al inicio</button><div style="text-align:center"><button class="link" onclick="db.n=0;save();go('home')">Reiniciar contador (solo para pruebas)</button></div>`}
+}
+draw();
+</script></body></html>
