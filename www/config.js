@@ -1,4 +1,15 @@
 window.MIVA_CONFIG = {
+  "billing": {
+    "enabled": false,
+    "apiKey": "",
+    "entitlementId": "pro",
+    "offeringId": "default",
+    "packageId": "$rc_monthly",
+    "productId": "miva_pro_monthly",
+    "basePlanId": "monthly",
+    "privacyUrl": "",
+    "termsUrl": ""
+  },
   "ads": {
     "enabled": true,
     "test": true,

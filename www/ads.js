@@ -42,11 +42,6 @@ async function init(hasPro){if(hasPro)pro=hasPro;if(initializing)return;
 }
 function show(next){ready=false;showing=true;done=next;saves=0;lastShown=Date.now();state.interstitial='Mostrando';plugin.showInterstitial().catch(e=>{failed('Intersticial: error al mostrar',e);complete();});}
 function atBreak(next){saves++;if(!initialized||pro()||!visible()||showing||!ready||saves<config.everySaves||Date.now()-started<config.minUseSeconds*1000||Date.now()-lastShown<config.cooldownSeconds*1000){if(initialized&&!ready&&!loading)preload();next();return;}show(next);}
-function testInterstitial(next=()=>{}){
- if(!demo){state.error='La prueba manual solo está habilitada con bloques oficiales de Google en debug.';next();return false;}
- if(!initialized||!ready||showing||!visible()||pro()){state.error='Intersticial no listo. Reintentá la carga y actualizá el estado.';next();return false;}
- show(next);return true;
-}
 async function privacy(){if(demo){window.alert('Este APK usa anuncios de demostración. El consentimiento real se configura con tu aplicación AdMob en release.');return;}if(!plugin){window.alert('AdMob no está activo. Revisá Estado de anuncios.');return;}
  try{await hide();ready=false;await plugin.showPrivacyOptionsForm();const info=await plugin.requestConsentInfo();state.consent=info.status;if(info.canRequestAds){if(!initialized){await plugin.initialize({initializeForTesting:config.test});initialized=true;}await banner();await preload();}else{initialized=false;state.stage='Consentimiento: anuncios no autorizados';}}catch(e){failed('No se pudieron abrir las opciones de privacidad',e);}
 }
@@ -54,5 +49,6 @@ document.addEventListener('visibilitychange',()=>{foreground=document.visibility
 document.addEventListener('mivaNativeForeground',()=>{foreground=true;if(initialized)banner();});
 document.addEventListener('mivaNativeBackground',()=>{foreground=false;hide();});
 function status(){return {...state,enabled:!!config.enabled,test:!!config.test,pro:pro(),native:cap?.getPlatform?.()==='android',ready,initialized,saves,everySaves:config.everySaves,cooldownSeconds:config.cooldownSeconds,secondsToNext:Math.max(0,Math.ceil((config.cooldownSeconds*1000-(Date.now()-lastShown))/1000))};}
-window.MivaAds={init,atBreak,privacy,status,testInterstitial,retry:()=>init()};
+async function accessChanged(){if(pro()){ready=false;await hide();}else if(config.enabled){await init();}}
+window.MivaAds={init,atBreak,privacy,status,accessChanged};
 })();

@@ -1,6 +1,6 @@
-# Miva 2.1.1 — Tu precio justo
+# Miva 2.2 — Tu precio justo
 
-Aplicación Android sin conexión para costear producción/reventa y administrar productos. Identificador com.miva.costos. Android mínimo 7.0. Mantiene los logos y navegación Atrás. Costeos básicos ilimitados. Algunas funciones se reservan para Pro. El pago y la validación de suscripciones aún no están integrados.
+Aplicación Android sin conexión para costear producción/reventa y administrar productos. Identificador com.miva.costos. Android mínimo 7.0. Mantiene los logos y navegación Atrás. Costeos básicos ilimitados. Algunas funciones se reservan para Pro. Compra y restauración mensual mediante Google Play y RevenueCat implementadas; falta configurar las cuentas para activarse.
 
 ## Subir a GitHub y generar APK
 
@@ -77,7 +77,7 @@ PowerShell:
 [Convert]::ToBase64String([IO.File]::ReadAllBytes('miva-release.jks'))
 ```
 
-Run workflow → release genera APK firmado. No publica en Google Play ni crea AAB.
+Run workflow → release genera APK firmado. No publica automáticamente en Google Play; release genera APK y AAB firmados.
 
 ## Desarrollo y validación
 
@@ -86,6 +86,7 @@ Node 22+, Java 21, Android SDK 36.
 ```bash
 npm ci
 npm run configure
+npm run build
 npm run check
 npm test
 npm run android:sync
@@ -93,7 +94,7 @@ cd android
 ./gradlew assembleDebug
 ```
 
-Windows: gradlew.bat. versionName 2.1; versionCode usa el número de ejecución del workflow. Al migrar el repositorio, asegurá que el código aumente.
+Windows: gradlew.bat. versionName 2.2; versionCode usa el número de ejecución del workflow. Al migrar el repositorio, asegurá que el código aumente.
 
 La lógica de costos, comisiones, merma, simulación, migración y validación de backups tiene pruebas automatizadas. La compilación nativa completa debe confirmarse en GitHub Actions y la integración de guardado/compartir/gestos en un teléfono. No se verificó una compilación Android local.
 
@@ -104,9 +105,9 @@ Originales de marca en branding/. En Android 12+ el splash del sistema utiliza e
 
 Gratis: costeos ilimitados, mano de obra, comisiones, edición/duplicado, ingredientes, stock, registro de ventas/gastos y backups.
 
-Reservado para Pro: simulador, presupuestos, análisis económico de ventas, exportación CSV, actualización masiva de precios y uso sin anuncios. La pantalla Pro indica que la suscripción está en preparación: no simula una compra ni realiza cobros. Las funciones están implementadas y pueden verificarse en debug con MIVA_PRO_PREVIEW=true; esta variable nunca activa Pro en release.
+Reservado para Pro: simulador, presupuestos, análisis económico de ventas, exportación CSV, actualización masiva de precios y uso sin anuncios. La pantalla Pro ofrece comprar cuando el plan está disponible en la tienda; sin configuración muestra que aún no está disponible. Las funciones están implementadas y pueden verificarse en debug con MIVA_PRO_PREVIEW=true; esta variable nunca activa Pro en release.
 
-Para vender suscripciones falta crear el producto de Google Play, integrar Google Play Billing y validar/restaurar compras por usuario. No uses una variable de GitHub ni un indicador en localStorage como prueba de pago. Los backups no contienen derechos Pro.
+Configuración de suscripción mensual: ver SUSCRIPCIONES.md.
 
 ## AdMob y variables de GitHub
 
@@ -140,12 +141,7 @@ https://github.com/capacitor-community/admob
 Pasaron 14 pruebas de lógica y flujos, incluyendo barreras Pro y elegibilidad de anuncios. La carga/visualización real de AdMob, los formularios UMP y la compilación Android deben comprobarse con Actions y en un teléfono.
 
 
-## Diagnóstico de anuncios (2.1.1)
 
-Inicio → Estado de anuncios muestra configuración del APK, modo Android, Pro, fase de inicialización, banner, intersticial y error exacto. Reintentar carga permite recuperar un fallo de red sin reiniciar la app. Actualizar estado muestra los eventos más recientes.
+## Versión 2.2
 
-En debug con los bloques oficiales de demostración de Google, la inicialización no depende de la configuración de mensajes UMP de una cuenta de editor. En release el consentimiento UMP se mantiene obligatorio cuando corresponde: no se solicita publicidad si canRequestAds no lo autoriza. Esta diferencia solo se permite con test=true y los dos IDs exactos de demostración.
-
-El botón Probar intersticial solo aparece en pruebas y solo muestra un anuncio ya listo, solicitado expresamente por el tester. Los intersticiales automáticos mantienen sus límites: tres guardados y tres minutos por defecto. Si no aparece el banner, verificá que MIVA_ADS_ENABLED no esté en false y MIVA_PRO_PREVIEW no esté en true. Release tiene anuncios desactivados por defecto hasta configurar los IDs y activarlos.
-
-Pasaron 16 pruebas automatizadas. Estas pruebas simulan el plugin; no prueban suministro real de Google, conectividad o configuración de tu cuenta. Probá el APK en un teléfono con conexión y consultá Estado de anuncios si sigue fallando.
+Probador y diagnóstico de anuncios retirados. Billing mensual implementado con RevenueCat 13.7.0. AAB release para Play Console. Antes de activarlo seguir SUSCRIPCIONES.md. Pasaron 21 pruebas simuladas; compras reales y compilación Android pendientes de validación externa.
