@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+const ctx=vm.createContext({});vm.runInContext(fs.readFileSync('www/core.js','utf8'),ctx);const C=ctx.MivaCore;
+const prod=()=>({...C.fresh('prod'),nombre:'Pan',rinde:10,ing:[{n:'Harina',q:1000,u:'g',p:1000}],min:60,hour:2000,g:50,fee:10,feeFixed:20});
+test('mano de obra y ganancia neta después de comisiones',()=>{const d=prod();assert.equal(C.validate(d),'');const r=C.calculate(d,{red:300,garrafa:900,amort:400});assert.equal(r.cost,370);assert.ok(Math.abs(r.price-(370*1.5+20)/.9)<1e-9);assert.ok(Math.abs(r.profit-185)<1e-9);});
+test('merma usa unidades vendibles',()=>{const d={...C.fresh('rev'),nombre:'Caja',pc:1000,uc:10,rotos:'si',nr:2,pack:10,ent:5};assert.equal(C.validate(d),'');assert.equal(C.calculate(d).cost,140);d.nr=10;assert.match(C.validate(d),/dañados/);});
+test('validación rechaza datos inválidos',()=>{for(const [k,v]of [['hour',-1],['rinde',0],['rinde',2.5],['fee',100],['pack','abc'],['nombre','']]){const d=prod();d[k]=v;assert.notEqual(C.validate(d),'');}});
+test('formatos locales y negativos',()=>{assert.equal(C.number('1.234,50'),1234.5);assert.equal(C.number('1,234.50'),1234.5);assert.equal(C.number('-10'),-10);assert.ok(Number.isNaN(C.number('12abc')));});
+test('migración y backup de productos previos',()=>{const db=C.normalize({list:[{n:'Anterior',p:1500}],n:3});assert.equal(db.list[0].cost,null);assert.equal(C.normalize(JSON.parse(JSON.stringify(db))).list[0].p,1500);});
+test('backup rechaza stock, costeo e IDs inválidos',()=>{assert.throws(()=>C.normalize({list:[{id:'p1',n:'X',p:1,stock:-1}]}));assert.throws(()=>C.normalize({list:[{id:'p1',n:'X',p:1},{id:'p1',n:'Y',p:2}]}));assert.throws(()=>C.normalize({list:[{n:'X',p:1,data:{mode:'prod'}}]}));});
+test('simulador muestra pérdidas sin mutar el costeo',()=>{const r={cost:100};assert.equal(C.simulate(r,100,20,10,5).profit,-35);assert.equal(r.cost,100);});
