@@ -1,1 +1,74 @@
-
+name: Generar APK Miva
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: Tipo de APK
+        required: true
+        default: debug
+        type: choice
+        options: [debug, release]
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BUILD_TYPE: ${{ inputs.build_type || 'debug' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - name: Instalar SDK Android
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Instalar dependencias y verificar
+        run: |
+          npm ci --no-audit --no-fund
+          npm run check
+          npx cap sync android
+      - name: Preparar firma de distribución
+        if: env.BUILD_TYPE == 'release'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          for key in KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!key}" ]; then echo "Falta configurar el secreto $key"; exit 1; fi
+          done
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/miva-release.jks"
+      - name: Compilar APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/miva-release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          if [ "$BUILD_TYPE" = 'release' ]; then
+            ./gradlew assembleRelease --no-daemon -PmivaVersionCode=${{ github.run_number }}
+          else
+            ./gradlew assembleDebug --no-daemon -PmivaVersionCode=${{ github.run_number }}
+          fi
+      - name: Publicar APK descargable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Miva-${{ env.BUILD_TYPE }}-${{ github.run_number }}
+          path: android/app/build/outputs/apk/${{ env.BUILD_TYPE }}/*.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Limpiar clave temporal
+        if: always()
+        run: rm -f "$RUNNER_TEMP/miva-release.jks"
