@@ -1,4 +1,4 @@
-# Miva 2.1 — Tu precio justo
+# Miva 2.1.1 — Tu precio justo
 
 Aplicación Android sin conexión para costear producción/reventa y administrar productos. Identificador com.miva.costos. Android mínimo 7.0. Mantiene los logos y navegación Atrás. Costeos básicos ilimitados. Algunas funciones se reservan para Pro. El pago y la validación de suscripciones aún no están integrados.
 
@@ -138,3 +138,14 @@ Plugin: @capacitor-community/admob 8.2.0. Guía:
 https://github.com/capacitor-community/admob
 
 Pasaron 14 pruebas de lógica y flujos, incluyendo barreras Pro y elegibilidad de anuncios. La carga/visualización real de AdMob, los formularios UMP y la compilación Android deben comprobarse con Actions y en un teléfono.
+
+
+## Diagnóstico de anuncios (2.1.1)
+
+Inicio → Estado de anuncios muestra configuración del APK, modo Android, Pro, fase de inicialización, banner, intersticial y error exacto. Reintentar carga permite recuperar un fallo de red sin reiniciar la app. Actualizar estado muestra los eventos más recientes.
+
+En debug con los bloques oficiales de demostración de Google, la inicialización no depende de la configuración de mensajes UMP de una cuenta de editor. En release el consentimiento UMP se mantiene obligatorio cuando corresponde: no se solicita publicidad si canRequestAds no lo autoriza. Esta diferencia solo se permite con test=true y los dos IDs exactos de demostración.
+
+El botón Probar intersticial solo aparece en pruebas y solo muestra un anuncio ya listo, solicitado expresamente por el tester. Los intersticiales automáticos mantienen sus límites: tres guardados y tres minutos por defecto. Si no aparece el banner, verificá que MIVA_ADS_ENABLED no esté en false y MIVA_PRO_PREVIEW no esté en true. Release tiene anuncios desactivados por defecto hasta configurar los IDs y activarlos.
+
+Pasaron 16 pruebas automatizadas. Estas pruebas simulan el plugin; no prueban suministro real de Google, conectividad o configuración de tu cuenta. Probá el APK en un teléfono con conexión y consultá Estado de anuncios si sigue fallando.
