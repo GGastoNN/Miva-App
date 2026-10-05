@@ -26,6 +26,11 @@ jobs:
       MIVA_AD_EVERY_SAVES: ${{ vars.MIVA_AD_EVERY_SAVES }}
       MIVA_AD_MIN_USE_SECONDS: ${{ vars.MIVA_AD_MIN_USE_SECONDS }}
       MIVA_PRO_PREVIEW: ${{ vars.MIVA_PRO_PREVIEW }}
+      MIVA_BILLING_ENABLED: ${{ vars.MIVA_BILLING_ENABLED }}
+      REVENUECAT_ANDROID_PUBLIC_KEY: ${{ vars.REVENUECAT_ANDROID_PUBLIC_KEY }}
+      MIVA_OFFERING_ID: ${{ vars.MIVA_OFFERING_ID }}
+      MIVA_PRIVACY_URL: ${{ vars.MIVA_PRIVACY_URL }}
+      MIVA_TERMS_URL: ${{ vars.MIVA_TERMS_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,6 +50,7 @@ jobs:
         run: |
           npm ci --no-audit --no-fund
           npm run configure
+          npm run build
           npm run check
           npm test
           npx cap sync android
@@ -74,6 +80,22 @@ jobs:
           else
             ./gradlew assembleDebug --no-daemon -PmivaVersionCode=${{ github.run_number }}
           fi
+      - name: Generar AAB firmado para Google Play
+        if: env.BUILD_TYPE == 'release'
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/miva-release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease --no-daemon -PmivaVersionCode=${{ github.run_number }}
+      - name: Publicar AAB descargable
+        if: env.BUILD_TYPE == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Miva-google-play-${{ github.run_number }}
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
       - name: Publicar APK descargable
         uses: actions/upload-artifact@v4
         with:
