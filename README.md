@@ -1,3 +1,7 @@
+> Actualización 2.3.1: menú hamburguesa para Ingredientes, Ventas y gastos, Configuración, Copias de seguridad, Pro y Privacidad. Las herramientas Pro muestran el beneficio que requiere suscripción. Se mantienen los límites y desbloqueos de 2.3.
+
+> Actualización 2.3: consultá COSTEOS_Y_ANUNCIOS.md. Free permite 3 costeos guardados; cada intersticial recompensado completado habilita 1 lugar más. Pro conserva costeos ilimitados. Ya no se muestran intersticiales automáticos al guardar.
+
 # Miva 2.2 — Tu precio justo
 
 Aplicación Android sin conexión para costear producción/reventa y administrar productos. Identificador com.miva.costos. Android mínimo 7.0. Mantiene los logos y navegación Atrás. Costeos básicos ilimitados. Algunas funciones se reservan para Pro. Compra y restauración mensual mediante Google Play y RevenueCat implementadas; falta configurar las cuentas para activarse.
@@ -103,7 +107,7 @@ Originales de marca en branding/. En Android 12+ el splash del sistema utiliza e
 
 ## Gratis y Pro
 
-Gratis: costeos ilimitados, mano de obra, comisiones, edición/duplicado, ingredientes, stock, registro de ventas/gastos y backups.
+Gratis: 3 costeos Free; ampliables viendo anuncios; ilimitados con Pro, mano de obra, comisiones, edición/duplicado, ingredientes, stock, registro de ventas/gastos y backups.
 
 Reservado para Pro: simulador, presupuestos, análisis económico de ventas, exportación CSV, actualización masiva de precios y uso sin anuncios. La pantalla Pro ofrece comprar cuando el plan está disponible en la tienda; sin configuración muestra que aún no está disponible. Las funciones están implementadas y pueden verificarse en debug con MIVA_PRO_PREVIEW=true; esta variable nunca activa Pro en release.
 

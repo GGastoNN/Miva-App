@@ -1,3 +1,5 @@
+> Actualización 2.3: consultá COSTEOS_Y_ANUNCIOS.md. Free permite 3 costeos guardados; cada intersticial recompensado completado habilita 1 lugar más. Pro conserva costeos ilimitados. Ya no se muestran intersticiales automáticos al guardar.
+
 # Activar Miva Pro mensual
 
 La compra/restauración está implementada en el código. Los productos aún no fueron creados en cuentas externas y no se están cobrando suscripciones. Necesitás Google Play Console y RevenueCat. RevenueCat verifica las compras y mantiene los derechos Pro.
