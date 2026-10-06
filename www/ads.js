@@ -1,4 +1,4 @@
-/* Ads only at deliberate breaks; errors are visible in the diagnostics screen. */
+/* Native AdMob consent, banners and voluntary rewarded unlocks. */
 (function(){
 'use strict';
 const config=window.MIVA_CONFIG?.ads||{},cap=window.Capacitor;
@@ -13,7 +13,26 @@ async function hide(){if(plugin&&bannerVisible){bannerVisible=false;try{await pl
 async function banner(){if(!initialized||pro()||!visible())return hide();state.banner='Solicitando';try{await plugin.showBanner({adId:config.bannerId,adSize:'BANNER',position:'BOTTOM_CENTER',margin:0,isTesting:config.test});bannerVisible=true;space(70);}catch(e){state.banner='Error';failed('Banner: error',e);space(0);}}
 async function preload(){if(loading||ready||!initialized||pro())return;loading=true;state.interstitial='Cargando';try{await plugin.prepareInterstitial({adId:config.interstitialId,isTesting:config.test});ready=true;state.interstitial='Listo';}catch(e){ready=false;state.interstitial='Error';failed('Intersticial: error de carga',e);}finally{loading=false;}}
 function complete(){if(!showing)return;showing=false;state.interstitial='Cerrado';const next=done;done=null;if(next)next();preload();}
+let rewardSession=null;
+async function unlockCosteo(grant){
+ if(rewardSession||showing||pro()||!initialized||!visible()||!config.rewardedInterstitialId)return false;
+ return new Promise(resolve=>{
+  const session={grant,resolve,earned:false};rewardSession=session;
+  plugin.prepareRewardInterstitialAd({adId:config.rewardedInterstitialId,isTesting:config.test}).then(()=>{
+   if(rewardSession!==session)return;
+   if(!visible()||pro()){finishReward();return;}
+   showing=true;
+   // The show promise resolves on reward only; dismissal is handled separately.
+   plugin.showRewardInterstitialAd().catch(()=>{if(rewardSession===session)finishReward();});
+  }).catch(()=>{if(rewardSession===session)finishReward();});
+ });
+}
+function finishReward(){const session=rewardSession;if(!session)return;rewardSession=null;showing=false;session.resolve(session.earned);}
+function grantReward(){const session=rewardSession;if(!session||!showing||session.earned)return;session.earned=true;session.grant();}
 async function listeners(){if(listening)return;
+ await plugin.addListener('onRewardedInterstitialAdReward',grantReward);
+ await plugin.addListener('onRewardedInterstitialAdDismissed',finishReward);
+ await plugin.addListener('onRewardedInterstitialAdFailedToShow',finishReward);
  await plugin.addListener('interstitialAdDismissed',complete);
  await plugin.addListener('interstitialAdFailedToShow',e=>{failed('Intersticial: error al mostrar',e);complete();});
  await plugin.addListener('bannerAdLoaded',()=>{state.banner='Cargado';bannerVisible=true;space(70);});
@@ -50,5 +69,5 @@ document.addEventListener('mivaNativeForeground',()=>{foreground=true;if(initial
 document.addEventListener('mivaNativeBackground',()=>{foreground=false;hide();});
 function status(){return {...state,enabled:!!config.enabled,test:!!config.test,pro:pro(),native:cap?.getPlatform?.()==='android',ready,initialized,saves,everySaves:config.everySaves,cooldownSeconds:config.cooldownSeconds,secondsToNext:Math.max(0,Math.ceil((config.cooldownSeconds*1000-(Date.now()-lastShown))/1000))};}
 async function accessChanged(){if(pro()){ready=false;await hide();}else if(config.enabled){await init();}}
-window.MivaAds={init,atBreak,privacy,status,accessChanged};
+window.MivaAds={init,atBreak,privacy,status,accessChanged,unlockCosteo};
 })();

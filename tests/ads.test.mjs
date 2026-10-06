@@ -9,3 +9,17 @@ test('demo initialization does not depend on publisher UMP configuration',async(
  let initialized=0;const handlers={};const plugin={addListener:async(k,f)=>{handlers[k]=f;},requestConsentInfo:async()=>{throw Error('publisher config');},initialize:async()=>{initialized++;},showBanner:async()=>{},prepareInterstitial:async()=>{}};
  const window={MIVA_CONFIG:{ads:{enabled:true,test:true,bannerId:'ca-app-pub-3940256099942544/6300978111',interstitialId:'ca-app-pub-3940256099942544/1033173712'}},Capacitor:{getPlatform:()=> 'android',registerPlugin:()=>plugin}};const ctx=vm.createContext({window,document:{visibilityState:'visible',documentElement:{style:{setProperty(){}}},addEventListener(){}},console,Date});vm.runInContext(fs.readFileSync('www/ads.js','utf8'),ctx);await window.MivaAds.init(()=>false);assert.equal(initialized,1);assert.equal(window.MivaAds.status().ready,true);});
 test('production errors are visible and do not bypass consent',async()=>{const a=setup(false);await a.api.init(()=>false);assert.match(a.api.status().stage,/consentimiento/);assert.equal(a.api.status().initialized,false);});
+
+test('rewarded interstitial grants once only on SDK reward, never early close or failure',async()=>{
+ const events={};let shows=0;
+ const plugin={addListener:async(k,f)=>events[k]=f,initialize:async()=>{},showBanner:async()=>{},prepareInterstitial:async()=>{},prepareRewardInterstitialAd:async()=>{},showRewardInterstitialAd:()=>{shows++;return new Promise(()=>{});}};
+ const window={MIVA_CONFIG:{ads:{enabled:true,test:true,bannerId:'ca-app-pub-3940256099942544/6300978111',interstitialId:'ca-app-pub-3940256099942544/1033173712',rewardedInterstitialId:'demo'}},Capacitor:{getPlatform:()=> 'android',registerPlugin:()=>plugin}};
+ vm.runInNewContext(fs.readFileSync('www/ads.js','utf8'),{window,document:{visibilityState:'visible',documentElement:{style:{setProperty(){}}},addEventListener(){}},console,Date});
+ await window.MivaAds.init(()=>false);let grants=0;
+ let task=window.MivaAds.unlockCosteo(()=>grants++);await Promise.resolve();
+ assert.equal(await window.MivaAds.unlockCosteo(()=>grants++),false);
+ events.onRewardedInterstitialAdDismissed();assert.equal(await task,false);assert.equal(grants,0);
+ task=window.MivaAds.unlockCosteo(()=>grants++);await Promise.resolve();events.onRewardedInterstitialAdReward();events.onRewardedInterstitialAdReward();assert.equal(grants,1);events.onRewardedInterstitialAdDismissed();assert.equal(await task,true);
+ task=window.MivaAds.unlockCosteo(()=>grants++);await Promise.resolve();events.onRewardedInterstitialAdFailedToShow();assert.equal(await task,false);assert.equal(grants,1);assert.equal(shows,3);
+ plugin.prepareRewardInterstitialAd=async()=>{throw Error('no fill')};assert.equal(await window.MivaAds.unlockCosteo(()=>grants++),false);assert.equal(grants,1);
+});

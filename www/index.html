@@ -42,9 +42,32 @@ textarea{width:100%;min-height:110px;font:inherit;padding:12px;border:1px solid 
 .error{color:#b91c1c;background:#fef2f2;padding:12px;border-radius:10px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid .btn{font-size:15px}.brand{width:210px;height:110px;object-fit:cover;max-width:80%;display:block;margin:auto}
 header{background:#161a35}.line{gap:12px}.btn.danger{background:#b91c1c}main{padding-bottom:calc(85px + var(--ad-space,0px))}#notice{bottom:calc(16px + var(--ad-space,0px))}input,select{min-width:0} .row{grid-template-columns:2fr 1fr 1fr}.mut{font-size:14px;color:var(--mut)}
+
+header{position:relative}
+.menu-toggle{position:absolute;left:16px;top:22px;display:grid;place-items:center;width:48px;height:48px;border:1px solid #ffffff55;border-radius:12px;background:transparent;color:white;cursor:pointer}
+.menu-toggle svg{width:25px;height:25px}
+.menu-drawer{position:fixed;inset:0 auto 0 0;width:min(340px,90vw);height:100dvh;max-height:100%;max-width:90vw;margin:0;padding:20px 18px calc(24px + var(--ad-space,0px));border:0;background:var(--bg);color:var(--ink);overflow-y:auto}
+.menu-drawer::backdrop{background:#08142cb3}
+.menu-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.menu-close{width:44px;height:44px;font-size:26px;border:0;border-radius:10px;background:white;color:var(--navy);cursor:pointer}
+.menu-drawer nav{display:grid;gap:8px}.menu-drawer .btn{text-align:left;margin:0;font-size:16px}
+.menu-drawer .menu-pro{background:var(--navy);color:white}.menu-drawer p{font-size:14px;color:var(--mut)}
+@media(max-width:360px){.brand{width:170px}.menu-toggle{left:10px;width:42px}}
 </style></head><body>
 <header>
+<button id="menu-toggle" class="menu-toggle" type="button" onclick="openMenu()" aria-label="Abrir menú" aria-controls="menu" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
 <img class="brand" src="assets/logo.jpeg" alt="Miva · Tu precio justo"></header>
+<dialog id="menu" class="menu-drawer" aria-labelledby="menu-title" oncancel="event.preventDefault();closeMenu()" onclick="if(event.target===this && event.clientX>this.getBoundingClientRect().right)closeMenu()">
+<div class="menu-heading"><h2 id="menu-title">Menú</h2><button type="button" class="menu-close" onclick="closeMenu()" aria-label="Cerrar menú" autofocus>×</button></div>
+<nav aria-label="Herramientas de Miva">
+<button class="btn alt" onclick="menuAction('ingredients')">Ingredientes</button>
+<button class="btn alt" onclick="menuAction('reports')">Ventas y gastos</button>
+<button class="btn alt" onclick="menuAction('settings')">Configuración</button>
+<button class="btn alt" onclick="menuAction('backup')">Copias de seguridad</button>
+<button class="btn menu-pro" onclick="menuAction('pro')">Miva Pro mensual</button>
+<button class="btn alt" onclick="menuAction('privacy')">Privacidad de anuncios</button>
+</nav><p>Pro incluye costeos ilimitados, herramientas avanzadas y uso sin anuncios.</p>
+</dialog>
 <main id="app"></main>
 <div id="notice" role="status" aria-live="polite"></div>
 <script src="assets/capacitor.js"></script>
