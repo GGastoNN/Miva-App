@@ -29,11 +29,14 @@ async function unlockCosteo(){
  finally{unlockBusy=false;if(view==='limit')draw();}
 }
 let menuOpen=false;
+const systemBars=window.Capacitor?.getPlatform?.()==='android'?window.Capacitor.registerPlugin('SystemBars'):null;
+function statusBarForMenu(open){systemBars?.setStyle({style:open?'LIGHT':'DARK',bar:'StatusBar'}).catch(()=>{});}
+
 function openMenu(){
  if(menuOpen)return;menuOpen=true;
- const panel=$('#menu');panel.showModal();$('#menu-toggle').setAttribute('aria-expanded','true');
+ const panel=$('#menu');panel.showModal();statusBarForMenu(true);$('#menu-toggle').setAttribute('aria-expanded','true');
 }
-function closeMenu(){if(!menuOpen)return;menuOpen=false;$('#menu').close();$('#menu-toggle').setAttribute('aria-expanded','false');$('#menu-toggle').focus();}
+function closeMenu(){if(!menuOpen)return;menuOpen=false;$('#menu').close();statusBarForMenu(false);$('#menu-toggle').setAttribute('aria-expanded','false');$('#menu-toggle').focus();}
 function menuAction(action){closeMenu();
  const actions={ingredients:()=>go('ingredients'),reports:()=>tool('reports'),settings:openSettings,backup:()=>tool('backup'),pro:()=>openPro(),privacy:()=>window.MivaAds?.privacy()};
  actions[action]?.();

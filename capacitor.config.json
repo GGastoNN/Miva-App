@@ -1,5 +1,12 @@
 {
   "appId": "com.miva.costos",
   "appName": "Miva",
-  "webDir": "www"
+  "webDir": "www",
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "hidden": false
+    }
+  }
 }

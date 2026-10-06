@@ -1,6 +1,6 @@
 {
   "name": "miva-android",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "private": true,
   "description": "Miva: costeo de productos para Android",
   "scripts": {

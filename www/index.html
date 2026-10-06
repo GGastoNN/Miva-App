@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Miva · Tu precio justo</title>
 <style>
 :root{--navy:#0b2447;--green:#16a34a;--bg:#f3f6fa;--line:#d6dfeb;--mut:#5b6b80;--ink:#10243f}
@@ -53,6 +53,15 @@ header{position:relative}
 .menu-drawer nav{display:grid;gap:8px}.menu-drawer .btn{text-align:left;margin:0;font-size:16px}
 .menu-drawer .menu-pro{background:var(--navy);color:white}.menu-drawer p{font-size:14px;color:var(--mut)}
 @media(max-width:360px){.brand{width:170px}.menu-toggle{left:10px;width:42px}}
+
+/* Insets supplied by Capacitor also work with older Android WebViews. */
+:root{--safe-top:var(--safe-area-inset-top,env(safe-area-inset-top,0px));--safe-bottom:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px));--safe-left:var(--safe-area-inset-left,env(safe-area-inset-left,0px));--safe-right:var(--safe-area-inset-right,env(safe-area-inset-right,0px))}
+header{padding-top:calc(18px + var(--safe-top));padding-left:calc(16px + var(--safe-left));padding-right:calc(16px + var(--safe-right))}
+.menu-toggle{top:calc(22px + var(--safe-top));left:calc(16px + var(--safe-left))}
+main{padding-left:calc(16px + var(--safe-left));padding-right:calc(16px + var(--safe-right));padding-bottom:calc(85px + var(--ad-space,0px) + var(--safe-bottom))}
+.menu-drawer{padding-top:calc(20px + var(--safe-top));padding-left:calc(18px + var(--safe-left));padding-bottom:calc(24px + var(--ad-space,0px) + var(--safe-bottom))}
+#notice{bottom:calc(16px + var(--ad-space,0px) + var(--safe-bottom))}
+@media(max-width:360px){.menu-toggle{left:calc(10px + var(--safe-left))}}
 </style></head><body>
 <header>
 <button id="menu-toggle" class="menu-toggle" type="button" onclick="openMenu()" aria-label="Abrir menú" aria-controls="menu" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
