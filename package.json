@@ -1,6 +1,6 @@
 {
   "name": "miva-android",
-  "version": "2.3.5",
+  "version": "2.5.0",
   "private": true,
   "description": "Miva: costeo de productos para Android",
   "scripts": {
@@ -13,8 +13,7 @@
   "dependencies": {
     "@capacitor-community/admob": "8.2.0",
     "@capacitor/android": "8.0.0",
-    "@capacitor/core": "8.0.0",
-    "@revenuecat/purchases-capacitor": "13.7.0"
+    "@capacitor/core": "8.0.0"
   },
   "devDependencies": {
     "@capacitor/cli": "8.0.0",

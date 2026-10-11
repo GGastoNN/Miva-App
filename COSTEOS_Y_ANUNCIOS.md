@@ -1,3 +1,5 @@
+> Desde 2.4, para pruebas usar MIVA_ADS_MODE=test. No requiere IDs reales aunque sea release. Para monetizar, cambiar a live y configurar los IDs. Ver GOOGLE_PLAY.md.
+
 # Miva 2.3: costeos gratuitos y desbloqueos
 
 - Free permite 3 productos/costeos guardados a la vez.

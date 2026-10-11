@@ -1,70 +1,47 @@
-> Actualización 2.3: consultá COSTEOS_Y_ANUNCIOS.md. Free permite 3 costeos guardados; cada intersticial recompensado completado habilita 1 lugar más. Pro conserva costeos ilimitados. Ya no se muestran intersticiales automáticos al guardar.
+# Miva Pro mensual · Google Play Billing directo
 
-# Activar Miva Pro mensual
+Paquete com.fixhome.miva. Sin RevenueCat, sin cuenta Miva, sin servidor propio. La app utiliza Play Billing Library 8.0.0 mediante el plugin nativo MivaPlayBilling.
 
-La compra/restauración está implementada en el código. Los productos aún no fueron creados en cuentas externas y no se están cobrando suscripciones. Necesitás Google Play Console y RevenueCat. RevenueCat verifica las compras y mantiene los derechos Pro.
+## Play Console
 
-## Google Play Console
-
-1. Usá el mismo identificador Android del proyecto: com.fixhome.miva. Si ya registraste otro, hay que adaptar el proyecto antes de continuar.
-2. Completá el perfil de pagos y la configuración de ventas que requiera tu consola.
-3. Subí un AAB a una pista de pruebas internas. Actions release genera el artefacto Miva-google-play-N.
-4. Creá una suscripción con ID **miva_pro_monthly** y nombre Miva Pro mensual.
-5. Agregá el plan base **monthly**, con renovación automática cada mes. Definí precio, moneda y países y activalo.
-6. No agregues ofertas, pruebas gratuitas ni planes prepagos en esta primera versión. La app compra el plan base mensual y muestra su precio regular.
-7. Agregá testers de licencia y de la pista interna según tu consola.
-
-El precio se obtiene de Google Play en la moneda del usuario; no se fija en GitHub. La compra final se confirma en la tienda.
-
-## RevenueCat
-
-1. Creá un proyecto Miva y una app Google Play con paquete com.fixhome.miva.
-2. Conectá Google Play siguiendo la guía de credenciales de servicio de RevenueCat. El JSON privado se carga allí, nunca en el repositorio ni en el APK.
-3. Importá el producto/plan **miva_pro_monthly:monthly**.
-4. Creá el entitlement **pro** y asociá ese producto.
-5. Creá el offering **default** y agregá el package Monthly, identificador **$rc_monthly**, con ese producto/plan.
-6. Copiá la clave pública Android SDK, que empieza con **goog_**.
-7. Configurá notificaciones de suscripción entre Google Play y RevenueCat siguiendo su guía.
-
-La app usa identidad anónima del SDK. Restaurar compras recupera la suscripción con la cuenta de Google Play y la política de restauración de tu proyecto RevenueCat. Revisá esa política antes de publicar.
+1. Subir el AAB firmado a pruebas internas.
+2. Completar la configuración comercial y de pagos requerida por Play.
+3. Monetización → Suscripciones: crear **miva_pro_monthly**.
+4. Crear plan base **monthly**, renovación automática **cada mes**. Activar precio, países y plan. No agregar ofertas ni prepagos para esta versión.
+5. Copiar la **clave pública RSA Base64 de licencia de esta aplicación** desde la sección de licencias de Play Console (puede figurar dentro de Configuración de monetización). No es la clave de firma ni una cuenta de servicio.
+6. Configurar testers de licencia y testers de la pista interna, y usar la cuenta correcta al instalar desde Play.
 
 ## GitHub Variables
 
-Settings → Secrets and variables → Actions → Variables:
-
 | Variable | Valor |
 |---|---|
-| MIVA_BILLING_ENABLED | true cuando producto y cuenta estén listos |
-| REVENUECAT_ANDROID_PUBLIC_KEY | Clave pública Android goog_… |
-| MIVA_OFFERING_ID | default |
-| MIVA_PRIVACY_URL | URL HTTPS pública de tu política de privacidad |
-| MIVA_TERMS_URL | URL HTTPS pública de condiciones de Miva Pro |
-| MIVA_PRO_PREVIEW | false para comprobar derechos reales |
+| MIVA_BILLING_ENABLED | true al tener el plan listo |
+| PLAY_BILLING_PUBLIC_KEY | Clave pública RSA Base64 de licencia de esta app, una sola línea |
+| MIVA_PRIVACY_URL | URL HTTPS pública de privacidad actualizada |
+| MIVA_TERMS_URL | URL HTTPS pública de términos actualizados |
+| MIVA_PRO_PREVIEW | false |
+| MIVA_ADS_MODE | test durante las pruebas |
+| MIVA_ADS_ENABLED | true |
 
-Sin MIVA_BILLING_ENABLED, la pantalla indica que la suscripción estará disponible próximamente. El build valida la clave pública y requiere las URLs de privacidad/condiciones cuando billing se activa en release.
+Eliminar REVENUECAT_ANDROID_PUBLIC_KEY y MIVA_OFFERING_ID si existían. No se necesitan entitlement, offering, cuenta RevenueCat ni JSON de servicio. Las contraseñas de firma permanecen en Secrets.
 
-La clave SDK es pública y queda dentro del APK. No uses claves secretas sk_…, cuentas de servicio ni contraseñas. Las contraseñas de firma siguen en Secrets. Conservá tus variables de AdMob actuales.
+Si billing queda false, el AAB se puede generar antes de configurar el producto. La clave pública se integra en BuildConfig; no se deben introducir claves privadas. Cuando billing se activa, el build valida formato RSA y exige URLs legales en release.
 
-## Compilar y probar
+## Implementación y límites
 
-1. Run workflow → release con los secretos de firma configurados.
-2. Descargá Miva-google-play-N, extraé el AAB y subilo a la pista interna.
-3. Instalá desde Google Play con una cuenta de tester habilitada.
-4. Probá precio mensual, compra cancelada, pago pendiente, compra confirmada, restauración, renovación, cancelación y vencimiento.
-5. Confirmá que Pro elimina anuncios y desbloquea herramientas sin borrar productos ni ventas.
-6. Confirmá que cancelar la renovación conserva acceso hasta terminar el período pagado.
+- Precio de tienda; compra únicamente del plan base mensual regular sin promociones.
+- Comprobación nativa de firma RSA y paquete, estado PURCHASED, reconocimiento de la compra con acknowledgePurchase. PENDING no habilita Pro.
+- Restaurar consulta las compras de Google Play de la cuenta del dispositivo. No depende de una cuenta propia ni usa copias de seguridad para habilitar Pro.
+- Consulta al iniciar, reanudar, recibir cambios y cada cinco minutos en primer plano. No persiste derechos Pro. La última comprobación en memoria deja de dar acceso tras diez minutos si no se actualiza; al fallar una consulta se suspende el acceso hasta una nueva comprobación correcta.
+- Cancelar la renovación no corta de inmediato el período pagado: la app se guía por las compras que Play devuelve como vigentes, no por isAutoRenewing. No calcula una fecha de vencimiento a partir de la fecha de compra.
+- No hay backend ni notificaciones de servidor. La consulta local puede depender de caché de Play y no da confirmación de vencimientos/reembolsos en tiempo real. La firma local no sustituye la validación del token en Google Play Developer API. Google recomienda verificar y reconocer compras en un backend para mayor protección. Esta versión es apta para comenzar las pruebas; no se presenta como validación antifraude de servidor.
+- Un solo producto mensual; si después agregás otros planes con el mismo producto, habrá que ampliar la comprobación del plan de la compra.
 
-Un APK de Actions no reemplaza las pruebas de facturación de la pista interna. No uses MIVA_PRO_PREVIEW para aprobar una compra de prueba.
+## Pruebas en Play
 
-## Implementado
+Instalar desde pista interna con tester de licencia. Probar precio, cancelación, pago pendiente, pago aprobado, reconocimiento, reinicio, restauración, renovación de prueba, fin del período, revocación, falta de conexión y anuncios ausentes en Pro. Confirmar transacciones de prueba en la pantalla de Google Play antes de aceptarlas. Las pruebas JS simulan el plugin; no sustituyen compilar Android ni comprar en un teléfono.
 
-Un solo plan mensual. Compra del plan base con precio de tienda. Restaurar únicamente al pulsar el botón. Actualización de derechos al abrir/reanudar y con eventos del SDK. Pro requiere entitlement activo y verificado; cancelar una compra o tener pago pendiente no lo activa. Gestión de suscripción en Google Play. Licencias fuera de backups/localStorage. Probador y diagnóstico de anuncios retirados.
+La integración Android debe compilarse en Actions. No se crearon productos ni se realizaron compras desde este proyecto.
 
-La compilación Android y las transacciones reales quedan por verificar en Actions, Play Console y un teléfono. Las pruebas automáticas simulan el SDK.
-
-Referencias oficiales:
-- https://www.revenuecat.com/docs/getting-started/installation/capacitor
-- https://www.revenuecat.com/docs/service-credentials/creating-play-service-credentials
-- https://www.revenuecat.com/docs/getting-started/entitlements
-- https://www.revenuecat.com/docs/getting-started/restoring-purchases
-- https://www.revenuecat.com/docs/test-and-launch/sandbox/google-play-store
+https://developer.android.com/google/play/billing/integrate
+https://developer.android.com/google/play/billing/security
