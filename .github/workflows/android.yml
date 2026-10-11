@@ -1,13 +1,13 @@
-name: Generar APK Miva
+name: Generar APK y AAB Miva
 on:
   push:
     branches: [main, master]
   workflow_dispatch:
     inputs:
       build_type:
-        description: Tipo de APK
+        description: debug = APK de prueba; release = APK y AAB firmados
         required: true
-        default: debug
+        default: release
         type: choice
         options: [debug, release]
 permissions:
@@ -18,6 +18,7 @@ jobs:
     timeout-minutes: 30
     env:
       BUILD_TYPE: ${{ inputs.build_type || 'debug' }}
+      MIVA_ADS_MODE: ${{ vars.MIVA_ADS_MODE || 'test' }}
       MIVA_ADS_ENABLED: ${{ vars.MIVA_ADS_ENABLED }}
       ADMOB_APP_ID: ${{ vars.ADMOB_APP_ID }}
       ADMOB_BANNER_ID: ${{ vars.ADMOB_BANNER_ID }}
@@ -27,9 +28,8 @@ jobs:
       MIVA_AD_EVERY_SAVES: ${{ vars.MIVA_AD_EVERY_SAVES }}
       MIVA_AD_MIN_USE_SECONDS: ${{ vars.MIVA_AD_MIN_USE_SECONDS }}
       MIVA_PRO_PREVIEW: ${{ vars.MIVA_PRO_PREVIEW }}
+      PLAY_BILLING_PUBLIC_KEY: ${{ vars.PLAY_BILLING_PUBLIC_KEY }}
       MIVA_BILLING_ENABLED: ${{ vars.MIVA_BILLING_ENABLED }}
-      REVENUECAT_ANDROID_PUBLIC_KEY: ${{ vars.REVENUECAT_ANDROID_PUBLIC_KEY }}
-      MIVA_OFFERING_ID: ${{ vars.MIVA_OFFERING_ID }}
       MIVA_PRIVACY_URL: ${{ vars.MIVA_PRIVACY_URL }}
       MIVA_TERMS_URL: ${{ vars.MIVA_TERMS_URL }}
     steps:
@@ -90,6 +90,13 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew bundleRelease --no-daemon -PmivaVersionCode=${{ github.run_number }}
+      - name: Verificar firma del AAB
+        if: env.BUILD_TYPE == 'release'
+        run: |
+          jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab > "$RUNNER_TEMP/miva-signature.txt"
+          if ! grep -q 'jar verified' "$RUNNER_TEMP/miva-signature.txt"; then
+            echo "No se pudo verificar la firma del AAB"; exit 1
+          fi
       - name: Publicar AAB descargable
         if: env.BUILD_TYPE == 'release'
         uses: actions/upload-artifact@v4
