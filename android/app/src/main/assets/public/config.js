@@ -1,10 +1,7 @@
 window.MIVA_CONFIG = {
   "billing": {
     "enabled": false,
-    "apiKey": "",
-    "entitlementId": "pro",
-    "offeringId": "default",
-    "packageId": "$rc_monthly",
+    "provider": "google-play",
     "productId": "miva_pro_monthly",
     "basePlanId": "monthly",
     "privacyUrl": "",
@@ -13,6 +10,7 @@ window.MIVA_CONFIG = {
   "ads": {
     "enabled": true,
     "test": true,
+    "mode": "test",
     "bannerId": "ca-app-pub-3940256099942544/6300978111",
     "interstitialId": "ca-app-pub-3940256099942544/1033173712",
     "rewardedInterstitialId": "ca-app-pub-3940256099942544/5354046379",
