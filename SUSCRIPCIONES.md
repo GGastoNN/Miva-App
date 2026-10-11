@@ -6,7 +6,7 @@ La compra/restauración está implementada en el código. Los productos aún no 
 
 ## Google Play Console
 
-1. Usá el mismo identificador Android del proyecto: com.miva.costos. Si ya registraste otro, hay que adaptar el proyecto antes de continuar.
+1. Usá el mismo identificador Android del proyecto: com.fixhome.miva. Si ya registraste otro, hay que adaptar el proyecto antes de continuar.
 2. Completá el perfil de pagos y la configuración de ventas que requiera tu consola.
 3. Subí un AAB a una pista de pruebas internas. Actions release genera el artefacto Miva-google-play-N.
 4. Creá una suscripción con ID **miva_pro_monthly** y nombre Miva Pro mensual.
@@ -18,7 +18,7 @@ El precio se obtiene de Google Play en la moneda del usuario; no se fija en GitH
 
 ## RevenueCat
 
-1. Creá un proyecto Miva y una app Google Play con paquete com.miva.costos.
+1. Creá un proyecto Miva y una app Google Play con paquete com.fixhome.miva.
 2. Conectá Google Play siguiendo la guía de credenciales de servicio de RevenueCat. El JSON privado se carga allí, nunca en el repositorio ni en el APK.
 3. Importá el producto/plan **miva_pro_monthly:monthly**.
 4. Creá el entitlement **pro** y asociá ese producto.

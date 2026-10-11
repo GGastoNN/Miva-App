@@ -69,11 +69,14 @@ main{padding-left:calc(16px + var(--safe-left));padding-right:calc(16px + var(--
 <dialog id="menu" class="menu-drawer" aria-labelledby="menu-title" oncancel="event.preventDefault();closeMenu()" onclick="if(event.target===this && event.clientX>this.getBoundingClientRect().right)closeMenu()">
 <div class="menu-heading"><h2 id="menu-title">Menú</h2><button type="button" class="menu-close" onclick="closeMenu()" aria-label="Cerrar menú" autofocus>×</button></div>
 <nav aria-label="Herramientas de Miva">
+<button class="btn alt" onclick="menuAction('home')">Inicio</button>
 <button class="btn alt" onclick="menuAction('ingredients')">Ingredientes</button>
 <button class="btn alt" onclick="menuAction('reports')">Ventas y gastos</button>
 <button class="btn alt" onclick="menuAction('settings')">Configuración</button>
 <button class="btn alt" onclick="menuAction('backup')">Copias de seguridad</button>
 <button class="btn menu-pro" onclick="menuAction('pro')">Miva Pro mensual</button>
+<button class="btn alt" onclick="menuAction('privacyPolicy')">Política de privacidad</button>
+<button class="btn alt" onclick="menuAction('terms')">Términos y condiciones</button>
 <button class="btn alt" onclick="menuAction('privacy')">Privacidad de anuncios</button>
 </nav><p>Pro incluye costeos ilimitados, herramientas avanzadas y uso sin anuncios.</p>
 </dialog>
@@ -84,5 +87,6 @@ main{padding-left:calc(16px + var(--safe-left));padding-right:calc(16px + var(--
 <script src="ads.js"></script>
 <script src="core.js"></script>
 <script src="billing.js"></script>
+<script src="legal.js"></script>
 <script src="app.js"></script>
 </body></html>

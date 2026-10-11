@@ -34,7 +34,7 @@ async function buy(){if(busy)return;if(!configured||!monthly||!option){message='
 }
 async function restore(){if(busy)return;if(!configured)await init();if(!configured){message='La restauración estará disponible al configurar la tienda.';notify();return;}
  busy=true;message='Restaurando compras…';notify();try{const result=await Purchases.restorePurchases();accept(result.customerInfo);message=hasPro()?'Pro restaurado.':'No encontramos una suscripción Pro activa para esta cuenta.';}catch(e){message=errorText(e);}finally{busy=false;notify();}}
-function manage(){const url=customer?.managementURL||'https://play.google.com/store/account/subscriptions?sku='+encodeURIComponent(cfg.productId||'miva_pro_monthly')+'&package='+encodeURIComponent('com.miva.costos');if(/^https:\/\/(play\.google\.com|payments\.google\.com)\//.test(url))window.open(url,'_blank','noopener');}
+function manage(){const url=customer?.managementURL||'https://play.google.com/store/account/subscriptions?sku='+encodeURIComponent(cfg.productId||'miva_pro_monthly')+'&package='+encodeURIComponent('com.fixhome.miva');if(/^https:\/\/(play\.google\.com|payments\.google\.com)\//.test(url))window.open(url,'_blank','noopener');}
 function status(){return {ready:configured&&!!monthly&&!!option,busy,active:hasPro(),price:option?.fullPricePhase?.price?.formatted||monthly?.product?.priceString||'',message,expires:customer?.entitlements?.active?.[cfg.entitlementId||'pro']?.expirationDate||null};}
 document.addEventListener('mivaNativeForeground',()=>{if(configured)refresh();});
 window.MivaBilling={init,refresh,buy,restore,manage,hasPro,status};

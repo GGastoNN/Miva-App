@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import vm from 'node:vm';import fs from 'node:fs';
 function app(storage=new Map()){
  const nodes={};const window={scrollTo(){},MIVA_CONFIG:{proPreview:true}};const ctx=vm.createContext({window,document:{querySelector:s=>nodes[s]??(nodes[s]={style:{},textContent:'',innerHTML:'',showModal(){this.open=true},close(){this.open=false},setAttribute(k,v){this[k]=v},focus(){this.focused=true}}),addEventListener(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},confirm:()=>true,setTimeout:()=>0,clearTimeout(){},navigator:{}});
- for(const f of ['core.js','app.js'])vm.runInContext(fs.readFileSync('www/'+f,'utf8'),ctx);return {ctx,storage,run:s=>vm.runInContext(s,ctx)};
+ for(const f of ['core.js','legal.js','app.js'])vm.runInContext(fs.readFileSync('www/'+f,'utf8'),ctx);return {ctx,storage,run:s=>vm.runInContext(s,ctx)};
 }
 test('guardar, editar, duplicar, stock, venta y anulación',()=>{const a=app();a.run("start('rev');Object.assign(S,{nombre:'Alfajor',pc:1000,uc:10});finish();keep();selected=db.list[0].id;form={qty:10};adjustStock(1);form={qty:2,price:150,fee:10,fixed:5,channel:'Tarjeta'};recordSale()");assert.equal(a.run('db.list[0].stock'),8);assert.equal(a.run('summary().profit'),60);a.run("form={qty:99,price:150,fee:0,fixed:0};recordSale()");assert.equal(a.run('db.sales.length'),1);a.run("cancelSale(db.sales[0].id)");assert.equal(a.run('db.list[0].stock'),10);a.run("editProduct(db.list[0].id);S.nombre='Nuevo';finish();keep()");assert.equal(a.run('db.list.length'),1);assert.equal(a.run('db.list[0].history.length'),1);a.run("editProduct(db.list[0].id,true);finish();keep()");assert.equal(a.run('db.list.length'),2);assert.equal(a.run('db.list[0].stock'),0);});
 test('borrador se recupera tras reiniciar y Atrás navega',()=>{const a=app();a.run("start('prod');S.nombre='Pan';step=2;draft()");const b=app(a.storage);b.run('resume()');assert.equal(b.run('S.nombre'),'Pan');assert.equal(b.run('step'),2);b.run('window.mivaBack()');assert.equal(b.run('step'),1);b.run('home()');assert.equal(b.run('window.mivaBack()'),false);});
@@ -42,4 +42,10 @@ test('herramientas Pro bloqueadas con beneficio explícito; suscriptor puede acc
  }
  a.run('csv()');assert.equal(a.run('proBenefit'),'Exportación de ventas CSV');
  a.run("window.MIVA_CONFIG.proPreview=true;productTool('simulate')");assert.equal(a.run('view'),'simulate');
+});
+
+test('documentos legales accesibles en Free y Pro con responsable y contacto',()=>{
+ const a=app();a.run('window.MIVA_CONFIG.proPreview=false');
+ for(const v of ['privacyPolicy','terms']){a.run(`go('${v}')`);const html=a.run("$('#app').innerHTML");assert.match(html,/FixHome Solutions/);assert.match(html,/infosoluciona2026@gmail.com/);}
+ a.run('openPro()');const html=a.run("$('#app').innerHTML");assert.match(html,/Política de privacidad/);assert.match(html,/Términos y condiciones/);
 });

@@ -4,7 +4,7 @@
 
 # Miva 2.2 — Tu precio justo
 
-Aplicación Android sin conexión para costear producción/reventa y administrar productos. Identificador com.miva.costos. Android mínimo 7.0. Mantiene los logos y navegación Atrás. Costeos básicos ilimitados. Algunas funciones se reservan para Pro. Compra y restauración mensual mediante Google Play y RevenueCat implementadas; falta configurar las cuentas para activarse.
+Aplicación Android sin conexión para costear producción/reventa y administrar productos. Identificador com.fixhome.miva. Android mínimo 7.0. Mantiene los logos y navegación Atrás. Costeos básicos ilimitados. Algunas funciones se reservan para Pro. Compra y restauración mensual mediante Google Play y RevenueCat implementadas; falta configurar las cuentas para activarse.
 
 ## Subir a GitHub y generar APK
 
