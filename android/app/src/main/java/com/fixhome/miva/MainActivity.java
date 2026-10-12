@@ -2,6 +2,7 @@ package com.fixhome.miva;
 
 import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.EdgeToEdge;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -26,6 +27,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(MivaFilesPlugin.class);
         registerPlugin(MivaBillingPlugin.class);
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             private boolean pending = false;
 
