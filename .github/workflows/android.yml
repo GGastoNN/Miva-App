@@ -104,6 +104,14 @@ jobs:
           name: Miva-google-play-${{ github.run_number }}
           path: android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
+      - name: Guardar mapa de ofuscación R8
+        if: env.BUILD_TYPE == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Miva-R8-mapping-${{ github.run_number }}
+          path: android/app/build/outputs/mapping/release/
+          if-no-files-found: error
+          retention-days: 90
       - name: Publicar APK descargable
         uses: actions/upload-artifact@v4
         with:
