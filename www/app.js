@@ -38,7 +38,7 @@ function openMenu(){
 }
 function closeMenu(){if(!menuOpen)return;menuOpen=false;$('#menu').close();statusBarForMenu(false);$('#menu-toggle').setAttribute('aria-expanded','false');$('#menu-toggle').focus();}
 function menuAction(action){closeMenu();
- const actions={privacyPolicy:()=>go('privacyPolicy'),terms:()=>go('terms'),home:()=>home(),ingredients:()=>go('ingredients'),reports:()=>tool('reports'),settings:openSettings,backup:()=>tool('backup'),pro:()=>openPro(),privacy:()=>window.MivaAds?.privacy()};
+ const actions={guide:()=>window.MivaGuide?.open(),privacyPolicy:()=>go('privacyPolicy'),terms:()=>go('terms'),home:()=>home(),ingredients:()=>go('ingredients'),reports:()=>tool('reports'),settings:openSettings,backup:()=>tool('backup'),pro:()=>openPro(),privacy:()=>window.MivaAds?.privacy()};
  actions[action]?.();
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menuOpen){e.preventDefault();closeMenu();}});
@@ -167,8 +167,8 @@ function draw(){let h='';const p=db.list.find(x=>x.id===selected);const back=but
  if(form.shareText)h+='<label>Texto para copiar y compartir</label><textarea readonly>'+esc(form.shareText)+'</textarea>';
  $('#app').innerHTML=(error?'<p class="error" role="alert">'+esc(error)+'</p>':'')+h;
 }
-window.mivaBack=function(){if(menuOpen){closeMenu();return true;}error='';if(view==='flow'){if(step>0){step--;draft();draw();window.scrollTo(0,0);}else home();return true;}if(view==='res'){step=titles[S.mode].length-1;go('flow',false);return true;}if(view==='home')return false;
+window.mivaBack=function(){if(window.MivaGuide?.back())return true;if(menuOpen){closeMenu();return true;}error='';if(view==='flow'){if(step>0){step--;draft();draw();window.scrollTo(0,0);}else home();return true;}if(view==='res'){step=titles[S.mode].length-1;go('flow',false);return true;}if(view==='home')return false;
  const previous=trail.pop();view=previous&&previous!=='res'&&previous!=='flow'?previous:'home';if(view==='product'&&!db.list.some(x=>x.id===selected))view='list';draw();window.scrollTo(0,0);return true;};
 draw();
 // Resolve SDK entitlement before loading ads, so paid users are not shown a banner on startup.
-(async()=>{try{await window.MivaBilling?.init(()=>{window.MivaAds?.accessChanged();if(view==='pro'||view==='reports')draw();});}finally{window.MivaAds?.init(hasPro);}})();
+(async()=>{await window.MivaGuide?.firstRun();try{await window.MivaBilling?.init(()=>{window.MivaAds?.accessChanged();if(view==='pro'||view==='reports')draw();});}finally{window.MivaAds?.init(hasPro);}})();
